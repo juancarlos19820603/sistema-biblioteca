@@ -12,7 +12,7 @@ from main import obtener_sistema
 class BibliotecaApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Sistema de Gestión de Biblioteca - SAPIENS")
+        self.root.title("Sistema de Gestión de Biblioteca")
         self.root.geometry("1200x800")
         self.root.configure(bg='#f5f5f5')
         
@@ -25,6 +25,9 @@ class BibliotecaApp:
         self.button_font = tkfont.Font(family="Helvetica", size=10)
         self.text_font = tkfont.Font(family="Helvetica", size=10)
         
+        # Variables para estadísticas dinámicas
+        self.stats_text = tk.StringVar()
+        
         # Crear el notebook (pestañas)
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(fill='both', expand=True, padx=10, pady=10)
@@ -36,6 +39,9 @@ class BibliotecaApp:
         self.crear_pestana_prestamos()
         self.crear_pestana_reportes()
         
+        # Actualizar estadísticas iniciales
+        self.actualizar_estadisticas()
+    
     def crear_pestana_inicio(self):
         # Pestaña de inicio
         self.inicio_frame = ttk.Frame(self.notebook)
@@ -47,7 +53,7 @@ class BibliotecaApp:
         title_label.pack(pady=30)
         
         # Subtítulo
-        subtitle_label = tk.Label(self.inicio_frame, text="Bienvenido al sistema SAPIENS", 
+        subtitle_label = tk.Label(self.inicio_frame, text="Bienvenido al Sistema de Gestión de Biblioteca", 
                                  font=self.subtitle_font, bg='#f5f5f5', fg='#7f8c8d')
         subtitle_label.pack(pady=10)
         
@@ -56,20 +62,8 @@ class BibliotecaApp:
                                    bg='#f5f5f5', fg='#2c3e50')
         stats_frame.pack(pady=20, padx=20, fill='x')
         
-        # Obtener estadísticas
-        total_libros = len(self.sistema.listar_libros())
-        libros_disponibles = len(self.sistema.listar_libros_disponibles())
-        total_usuarios = len(self.sistema.listar_usuarios())
-        prestamos_activos = len(self.sistema.obtener_prestamos_activos())
-        
-        # Mostrar estadísticas
-        stats_text = f"""
-        Total de libros: {total_libros}
-        Libros disponibles: {libros_disponibles}
-        Total de usuarios: {total_usuarios}
-        Préstamos activos: {prestamos_activos}
-        """
-        stats_label = tk.Label(stats_frame, text=stats_text, font=self.text_font, 
+        # Label para mostrar estadísticas (usando StringVar para actualización dinámica)
+        stats_label = tk.Label(stats_frame, textvariable=self.stats_text, font=self.text_font, 
                               bg='#f5f5f5', justify='left')
         stats_label.pack(pady=10, padx=10)
         
@@ -91,6 +85,21 @@ class BibliotecaApp:
                           font=self.button_font, bg='#3498db', fg='white',
                           width=20, height=2, relief='flat')
             btn.pack(side='left', padx=10, pady=10)
+    
+    def actualizar_estadisticas(self):
+        """Actualiza las estadísticas con los valores actuales del sistema"""
+        total_libros = len(self.sistema.listar_libros())
+        libros_disponibles = len(self.sistema.listar_libros_disponibles())
+        total_usuarios = len(self.sistema.listar_usuarios())
+        prestamos_activos = len(self.sistema.obtener_prestamos_activos())
+        
+        # Actualizar el texto de las estadísticas
+        stats_text = f"Total de libros: {total_libros}\n"
+        stats_text += f"Libros disponibles: {libros_disponibles}\n"
+        stats_text += f"Total de usuarios: {total_usuarios}\n"
+        stats_text += f"Préstamos activos: {prestamos_activos}"
+        
+        self.stats_text.set(stats_text)
     
     def crear_pestana_libros(self):
         # Pestaña de gestión de libros
@@ -267,6 +276,7 @@ class BibliotecaApp:
                 messagebox.showinfo("Éxito", mensaje)
                 add_window.destroy()
                 self.actualizar_lista_libros()
+                self.actualizar_estadisticas()  # Actualizar estadísticas
             else:
                 messagebox.showerror("Error", mensaje)
         
@@ -357,6 +367,7 @@ class BibliotecaApp:
                 messagebox.showinfo("Éxito", mensaje)
                 edit_window.destroy()
                 self.actualizar_lista_libros()
+                self.actualizar_estadisticas()  # Actualizar estadísticas
             else:
                 messagebox.showerror("Error", mensaje)
         
@@ -389,6 +400,7 @@ class BibliotecaApp:
             if exito:
                 messagebox.showinfo("Éxito", mensaje)
                 self.actualizar_lista_libros()
+                self.actualizar_estadisticas()  # Actualizar estadísticas
             else:
                 messagebox.showerror("Error", mensaje)
     
@@ -544,6 +556,7 @@ class BibliotecaApp:
                 messagebox.showinfo("Éxito", mensaje)
                 add_window.destroy()
                 self.actualizar_lista_usuarios()
+                self.actualizar_estadisticas()  # Actualizar estadísticas
             else:
                 messagebox.showerror("Error", mensaje)
         
@@ -624,6 +637,7 @@ class BibliotecaApp:
                 messagebox.showinfo("Éxito", mensaje)
                 edit_window.destroy()
                 self.actualizar_lista_usuarios()
+                self.actualizar_estadisticas()  # Actualizar estadísticas
             else:
                 messagebox.showerror("Error", mensaje)
         
@@ -636,7 +650,7 @@ class BibliotecaApp:
         # Obtener usuario seleccionado
         selected_item = self.usuarios_tree.selection()
         if not selected_item:
-            messagebox.showwarning("Advertencia", "Por favor seleccione un usuario para eliminar")
+            messagebox.showwarning("Advertencia", "Por favor seleccione an usuario para eliminar")
             return
         
         # Obtener ID del usuario seleccionado
@@ -656,6 +670,7 @@ class BibliotecaApp:
             if exito:
                 messagebox.showinfo("Éxito", mensaje)
                 self.actualizar_lista_usuarios()
+                self.actualizar_estadisticas()  # Actualizar estadísticas
             else:
                 messagebox.showerror("Error", mensaje)
     
@@ -779,6 +794,7 @@ class BibliotecaApp:
                 prestamo_window.destroy()
                 self.actualizar_lista_prestamos()
                 self.actualizar_lista_libros()  # Actualizar estado de libros
+                self.actualizar_estadisticas()  # Actualizar estadísticas
             else:
                 messagebox.showerror("Error", mensaje)
         
@@ -817,6 +833,7 @@ class BibliotecaApp:
                 messagebox.showinfo("Éxito", mensaje)
                 self.actualizar_lista_prestamos()
                 self.actualizar_lista_libros()  # Actualizar estado de libros
+                self.actualizar_estadisticas()  # Actualizar estadísticas
             else:
                 messagebox.showerror("Error", mensaje)
     
@@ -989,7 +1006,7 @@ class BibliotecaApp:
         
         # Treeview para mostrar todos los usuarios
         columns = ('ID', 'Nombre', 'Contacto')
-        tree = tttk.Treeview(main_frame, columns=columns, show='headings')
+        tree = ttk.Treeview(main_frame, columns=columns, show='headings')
         
         # Configurar columnas
         for col in columns:
