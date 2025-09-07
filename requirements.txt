@@ -1,0 +1,3 @@
+# requirements.txt
+tkinter  # Ya viene con Python, pero lo incluimos para documentación
+Pillow==9.5.0  # Para manejar imágenes en la interfaz
